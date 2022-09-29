@@ -1,32 +1,26 @@
 const express = require("express");
-const path = require('path');
-
-const createNoteService = require("../services/create.note.service.js");
-const readNoteService = require("../services/read.note.service.js");
-const editNoteService = require("../services/edit.note.service.js");
-const deleteNoteService = require("../services/delete.note.service.js");
-
 const router = express.Router();
-router.use(express.static(path.join(__dirname, "../public")));
 
-//Create a note object.
-router.post('/', createNoteService);
-//Retrieve item. (get note)
-router.get('/:id', readNoteService);
-//Edit item.
-router.patch('/:id', editNoteService);
-//Remove item.
-router.delete('/:id', deleteNoteService);
+const readNotesStatsMiddleware = require("../middlewares/read.notes.stats.middleware");
+const readAllNotesMiddleware = require("../middlewares/read.all.notes.middleware.js");
 
+const createNoteMiddleware = require("../middlewares/crud/create.note.middleware.js");
+const readNoteMiddleware = require("../middlewares/crud/read.note.middleware.js");
+const updateNoteMiddleware = require("../middlewares/crud/update.note.middleware.js");
+const deleteNoteMiddleware = require("../middlewares/crud/delete.note.middleware.js");
 
-//Get aggregated data statistics. You don’t have to mock this data. You need to calculate it based on notes objects you have.
 //get object with analyzed stats table data
-router.get('/stats',()=>{
+router.get('/stats', readNotesStatsMiddleware);
+//Read all notes
+router.get('/', readAllNotesMiddleware);
 
-});
-//Get all notes.
-router.get('/',()=>{
-
-});
+//Create
+router.post('/', createNoteMiddleware);
+//Read
+router.get('/:id', readNoteMiddleware);
+//Update
+router.patch('/:id', updateNoteMiddleware);
+//Delete
+router.delete('/:id', deleteNoteMiddleware);
 
 module.exports = router;

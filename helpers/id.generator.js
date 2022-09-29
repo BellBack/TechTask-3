@@ -1,4 +1,3 @@
-
 const makeID = (length) => {
     let result = '',
         chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
@@ -9,4 +8,4 @@ const makeID = (length) => {
     return result;
 }
 
-module.exports = { makeID }
+module.exports = makeID

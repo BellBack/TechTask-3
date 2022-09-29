@@ -1,52 +1,31 @@
-const fs = require("fs");
-const path = require('path');
-const makeID = require('../heplers/id.generator');
-
+const makeID = require('../helpers/id.generator.js');
+const getDatesFromText = require('../helpers/date.finder.js');
+const noteValidation = require('./note.validation.service.js');
+const getNotesData = require('../repositories/get.notes.data.js');
+const updateNotesData = require("../repositories/update.notes.data");
 
 const createNoteService = (req, res) => {
-    if(!req.body)
-        return res.sendStatus(400);
+    if (!req.body)
+        return res.sendStatus(400).send("Error. Note's data not found!");
 
-    let data = fs.readFileSync(path.join(__dirname, "../users.json"), "utf8"), users = JSON.parse(data);
+    if (!noteValidation(req.body.name, req.body.content, req.body.category))
+        return res.sendStatus(422).send('Error. Note data invalid!');
 
-    let user = {
-        id: Math.max.apply(Math,users.map(function(o){return o.id;})) + 1,
-        login: req.body.login,
+    let notes = getNotesData();
+
+    notes.push({
+        id: makeID(10),
         name: req.body.name,
-        age: req.body.age,
-        pass: req.body.pass,
-        session: makeID(10)
-    };
+        created:  new Date(),
+        category: req.body.category,
+        content: req.body.content,
+        dates: getDatesFromText(req.body.content),
+        archived: false
+    });
 
-    for(let i = 0; i < users.length; i++)
-        if(users[i].login === user.login) {
+    updateNotesData(notes);
 
-            return res.status(400).send(`
-                <h1>
-                    There is user with this login!
-                </h1>
-                <p>Try other login.</p>
-                <script>
-                    document.cookie = "session=0; max-age=0";
-                    setTimeout(()=>{window.open("/registration")},3000);
-                </script>
-            `);
-        }
-
-
-    users.push(user);
-    data = JSON.stringify(users);
-    fs.writeFileSync(path.join(__dirname, "../users.json"), data);
-
-
-    res.send(`
-        <h1>Successful operation!</h1>
-            <p>Redirecting to dashboard.</p>
-        <script src="scripts/redirect.to.dashboard.js"></script>
-    `);
-
-
+    res.send('Note created successfully');
 };
-
 
 module.exports = { createNoteService };
